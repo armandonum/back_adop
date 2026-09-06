@@ -1,6 +1,7 @@
 // backend/src/server.ts
 import app from "./app";
 import dotenv from "dotenv";
+import mongoose from "mongoose"; // ✅ Agregar esta importación
 import { connectDB } from "./config/database/connection";
 
 dotenv.config();
