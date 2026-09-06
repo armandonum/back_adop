@@ -4,15 +4,29 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://admin:Admin123456@flori.kepjxld.mongodb.net/adopciones?retryWrites=true&w';
+// ✅ Verificar que la variable existe
+const MONGO_URI = process.env.MONGO_URI || '';
+
+// ✅ Log para depuración (NUNCA mostrar la contraseña completa en producción)
+console.log('🔍 MONGO_URI configurada?', MONGO_URI ? '✅ Sí' : '❌ No');
+console.log('🔍 MONGO_URI longitud:', MONGO_URI.length);
+console.log('🔍 MONGO_URI comienza con mongodb:', MONGO_URI.startsWith('mongodb'));
+
+if (!MONGO_URI) {
+  console.error('❌ MONGO_URI no está definida en las variables de entorno');
+}
 
 export const connectDB = async () => {
   try {
-    // ✅ Configurar opciones de conexión para Vercel
+    // ✅ Validar que la URI existe y es válida
+    if (!MONGO_URI || !MONGO_URI.startsWith('mongodb')) {
+      throw new Error(`MONGO_URI inválida: "${MONGO_URI}". Debe comenzar con "mongodb://" o "mongodb+srv://"`);
+    }
+
     const options = {
-      serverSelectionTimeoutMS: 10000, // 10 segundos
-      socketTimeoutMS: 45000, // 45 segundos
-      family: 4, // Usar IPv4
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      family: 4,
       maxPoolSize: 10,
       minPoolSize: 1,
     };
@@ -26,10 +40,8 @@ export const connectDB = async () => {
   }
 };
 
-// ✅ Función para verificar si MongoDB está conectado
 export const isConnected = () => mongoose.connection.readyState === 1;
 
-// ✅ Eventos de conexión
 mongoose.connection.on('connected', () => {
   console.log('🟢 MongoDB conectado');
 });
