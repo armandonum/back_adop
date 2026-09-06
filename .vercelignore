@@ -1,0 +1,9 @@
+# backend/.vercelignore
+node_modules/
+dist/
+uploads/
+.env
+.git/
+*.log
+.DS_Store
+.vscode/
