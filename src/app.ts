@@ -1,3 +1,4 @@
+// backend/src/app.ts
 import express from "express";
 import cors from "cors";
 import path from 'path';
@@ -16,11 +17,19 @@ import adminRoutes from "./routes/adminRoutes";
 
 const app = express();
 
-// Middlewares
-app.use(cors());
+// ✅ CORS - Permite ambos orígenes
+app.use(cors({
+  origin: [
+    'https://front-adop.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Rutas
+// ✅ Rutas
 app.use("/api/auth", authRoutes);
 app.use("/api/tipos-mascota", tipoMascotaRoutes);
 app.use("/api/razas", razaRoutes);
@@ -30,14 +39,23 @@ app.use("/api/adopciones", adopcionRoutes);
 app.use("/api/seguimientos", seguimientoRoutes);
 app.use("/api/notificaciones", notificacionRoutes);
 app.use("/api/reportes", reporteRoutes);
-app.use("/api/admin", adminRoutes); 
+app.use("/api/admin", adminRoutes);
 
+// ✅ Servir archivos estáticos (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-
-// Ruta de prueba
+// ✅ Ruta de prueba
 app.get("/", (req, res) => {
-  res.send("🐾 API de Gestión de Adopciones de Mascotas - Sucre");
+  res.json({ 
+    message: "API de Gestión de Adopciones de Mascotas - Sucre",
+    status: "online",
+    version: "1.0.0"
+  });
+});
+
+// ✅ Ruta de health check para Vercel
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Middleware de errores (debe ir al final)
