@@ -268,25 +268,25 @@ export const actualizarEstadoAdopcion = async (req: Request, res: Response, next
     next(error);
   }
 };
-
+// backend/src/controllers/adopcionController.ts
 export const misAdopciones = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id;
 
     if (!userId) {
-      throw new ApiError({
+      return next(new ApiError({
         name: 'UNAUTHORIZED',
         message: 'Usuario no autenticado',
         code: 'NOT_AUTHENTICATED',
         status: 401,
-      });
+      }));
     }
 
     // Buscar adopciones donde el usuario es oferente
     const oferente = await OferenteModel.findOne({ usuario: userId });
     const oferenteId = oferente?._id;
 
-    // Buscar adopciones donde el usuario es solicitante (postulante)
+    // Buscar adopciones donde el usuario es adoptante (postulante)
     const postulante = await PostulanteModel.findOne({ usuario: userId });
     const postulanteId = postulante?._id;
 
@@ -296,14 +296,14 @@ export const misAdopciones = async (req: Request, res: Response, next: NextFunct
     if (oferenteId && postulanteId) {
       filter.$or = [
         { oferente: oferenteId },
-        { solicitante: postulanteId }
+        { adoptante: postulanteId }
       ];
     } else if (oferenteId) {
       filter.oferente = oferenteId;
     } else if (postulanteId) {
-      filter.solicitante = postulanteId;
+      filter.adoptante = postulanteId;
     } else {
-      // Si no es oferente ni solicitante, devolver vacío
+      // ✅ Retornar array vacío si no es ni oferente ni adoptante
       return res.json([]);
     }
 
@@ -316,12 +316,13 @@ export const misAdopciones = async (req: Request, res: Response, next: NextFunct
         ],
       })
       .populate('oferente', 'nombres apellidos telefono')
-      .populate('solicitante', 'nombres apellidos telefono')
+      .populate('adoptante', 'nombres apellidos telefono')
       .sort({ fechaAdopcion: -1 });
 
-    res.json(adopciones);
+    // ✅ Retornar el resultado
+    return res.json(adopciones);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
